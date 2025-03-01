@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(main VERSION 0.1.0 LANGUAGES C CXX)
+project(main VERSION 0.1.0 LANGUAGES C)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
@@ -45,7 +45,13 @@ foreach(LIB_FILE ${LIB_FILES})
   )
 endforeach()
 
+
+set(USER_SOURCES ${PROJECT_SOURCE_DIR}/src/ui.cpp)
+set(USER_INCLUDES ${PROJECT_SOURCE_DIR}/include)
+# message("User sources:\n${USER_SOURCES}\n\nUser includes:\n${USER_INCLUDES}\n")
+
 add_subdirectory(uitest)
+
 
 target_link_libraries(main PRIVATE
     ${GLFW_LIB_NAME}
@@ -53,7 +59,7 @@ target_link_libraries(main PRIVATE
 )
 
 
-if(WIN32)
+if(WIN32 AND CMAKE_BUILD_TYPE STREQUAL "Release")
   target_sources(main PRIVATE ${PROJECT_SOURCE_DIR}/lib/windows/glfw3.dll)
   set_target_properties(main PROPERTIES
       WIN32_EXECUTABLE TRUE

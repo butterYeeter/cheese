@@ -3,159 +3,36 @@
 
 #include "cglm/types.h"
 #include <stdint.h>
+#include <stddef.h>
 
-vec3 positions[] = {
-{ 0.0f, 0.0f, 0.0f},
-{ 2.0f, 5.0f, -15.0f},
-{-1.5f, -2.2f, -2.5f},
-{-3.8f, -2.0f, -12.3f},
-{ 2.4f, -0.4f, -3.5f},
-{-1.7f, 3.0f, -7.5f},
-{ 1.3f, -2.0f, -2.5f},
-{ 1.5f, 2.0f, -2.5f},
-{ 1.5f, 0.2f, -1.5f},
-{-1.3f, 1.0f, -1.5f}
-};
+extern vec3 positions[];
+extern size_t sizeof_positions;
 
-vec3 lightPositions[] = {
-    { 0.7f, 0.2f, 2.0f},
-    { 2.3f, -3.3f, -4.0f},
-    {-4.0f, 2.0f, -12.0f},
-    { 0.0f, 0.0f, -3.0f}
-};
+extern vec3 lightPositions[];
+extern size_t sizeof_lightPositions;
 
-float triangle[] = {
-    -0.5f, -0.5f, 0.5f, -0.5f, 0.0f, 0.37f
-};
+extern float triangle[];
+extern size_t sizeof_triangle;
 
-float square[] = {-0.5f, -0.5f, 0.5f, -0.5f, 0.5f,  0.5f,
-                  -0.5f, -0.5f, 0.5f, 0.5f,  -0.5f, 0.5f};
+extern float square[];
+extern size_t sizeof_square;
 
-float tri_base_pyramid[] = {-0.5f, -0.5f, 0.5f,  0.5f,  -0.5f,
-                            0.5f,  0.5f,  -0.5f, -0.5f, -0.5f,
-                            -0.5f, -0.5f, 0.0f,  0.21f, 0.0f};
+extern float tri_base_pyramid[];
+extern size_t sizeof_tri_base_pyramid;
 
-float tbp_colors[] = {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-                      1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f};
+extern float tbp_colors[];
+extern size_t sizeof_tbp_colors;
 
+extern float cube[];
+extern size_t sizeof_cube;
 
-float cube[] = {
-    -0.5f, -0.5f, 0.5f,
-    0.5f, -0.5f, 0.5f,
-    0.5f, 0.5f, 0.5f,
-    -0.5f, -0.5f, 0.5f,
-    0.5f, 0.5f, 0.5f,
-    -0.5f, 0.5f, 0.5f,
-    0.5f, -0.5f, 0.5f,
-    0.5f, -0.5f, -0.5f,
-    0.5f, 0.5f, -0.5f,
-    0.5f, -0.5f, 0.5f,
-    0.5f, 0.5f, -0.5f,
-    0.5f, 0.5f, 0.5f,
-    0.5f, -0.5f, -0.5f,
-    -0.5f, -0.5f, -0.5f,
-    -0.5f, 0.5f, -0.5f,
-    0.5f, -0.5f, -0.5f,
-    -0.5f, 0.5f, -0.5f,
-    0.5f, 0.5f, -0.5f,
-    -0.5f, -0.5f, -0.5f,
-    -0.5f, -0.5f, 0.5f,
-    -0.5f, 0.5f, 0.5f,
-    -0.5f, -0.5f, -0.5f,
-    -0.5f, 0.5f, 0.5f,
-    -0.5f, 0.5f, -0.5f,
-    -0.5f, -0.5f, 0.5f,
-    0.5f, -0.5f, 0.5f,
-    0.5f, -0.5f, -0.5f,
-    -0.5f, -0.5f, 0.5f,
-    0.5f, -0.5f, -0.5f,
-    -0.5f, -0.5f, -0.5f,
-    -0.5f, 0.5f, 0.5f,
-    0.5f, 0.5f, 0.5f,
-    0.5f, 0.5f, -0.5f,
-    -0.5f, 0.5f, 0.5f,
-    0.5f, 0.5f, -0.5f,
-    -0.5f, 0.5f, -0.5f
-};
+extern float cube_tex_coords[];
+extern size_t sizeof_cube_tex_coords;
 
-float cube_tex_coords[] = {
-    0.0f, 0.0f,
-    1.0f, 0.0f,
-    1.0f, 1.0f,
-    0.0f, 0.0f,
-    1.0f, 1.0f,
-    0.0f, 1.0f,
-    0.0f, 0.0f,
-    1.0f, 0.0f,
-    1.0f, 1.0f,
-    0.0f, 0.0f,
-    1.0f, 1.0f,
-    0.0f, 1.0f,
-    0.0f, 0.0f,
-    1.0f, 0.0f,
-    1.0f, 1.0f,
-    0.0f, 0.0f,
-    1.0f, 1.0f,
-    0.0f, 1.0f,
-    0.0f, 0.0f,
-    1.0f, 0.0f,
-    1.0f, 1.0f,
-    0.0f, 0.0f,
-    1.0f, 1.0f,
-    0.0f, 1.0f,
-    0.0f, 0.0f,
-    1.0f, 0.0f,
-    1.0f, 1.0f,
-    0.0f, 0.0f,
-    1.0f, 1.0f,
-    0.0f, 1.0f,
-    0.0f, 0.0f,
-    1.0f, 0.0f,
-    1.0f, 1.0f,
-    0.0f, 0.0f,
-    1.0f, 1.0f,
-    0.0f, 1.0f,
-};
+extern uint32_t tbp_indices[];
+extern size_t sizeof_tbp_indices;
 
-float cube_normals[] = {
-    0.0f, 0.0f, 1.0f,
-    0.0f, 0.0f, 1.0f,
-    0.0f, 0.0f, 1.0f,
-    0.0f, 0.0f, 1.0f,
-    0.0f, 0.0f, 1.0f,
-    0.0f, 0.0f, 1.0f,
-    1.0f, 0.0f, 0.0f,
-    1.0f, 0.0f, 0.0f,
-    1.0f, 0.0f, 0.0f,
-    1.0f, 0.0f, 0.0f,
-    1.0f, 0.0f, 0.0f,
-    1.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, -1.0f,
-    0.0f, 0.0f, -1.0f,
-    0.0f, 0.0f, -1.0f,
-    0.0f, 0.0f, -1.0f,
-    0.0f, 0.0f, -1.0f,
-    0.0f, 0.0f, -1.0f,
-    -1.0f, 0.0f, 0.0f,
-    -1.0f, 0.0f, 0.0f,
-    -1.0f, 0.0f, 0.0f,
-    -1.0f, 0.0f, 0.0f,
-    -1.0f, 0.0f, 0.0f,
-    -1.0f, 0.0f, 0.0f,
-    0.0f, -1.0f, 0.0f,
-    0.0f, -1.0f, 0.0f,
-    0.0f, -1.0f, 0.0f,
-    0.0f, -1.0f, 0.0f,
-    0.0f, -1.0f, 0.0f,
-    0.0f, -1.0f, 0.0f,
-    0.0f, 1.0f, 0.0f,
-    0.0f, 1.0f, 0.0f,
-    0.0f, 1.0f, 0.0f,
-    0.0f, 1.0f, 0.0f,
-    0.0f, 1.0f, 0.0f,
-    0.0f, 1.0f, 0.0f
-};
-
-uint32_t tbp_indices[] = {0, 1, 2, 0, 2, 3, 0, 1, 4, 1, 2, 4, 2, 3, 4, 3, 0, 4};
+extern float cube_normals[];
+extern size_t sizeof_cube_normals;
 
 #endif /* SHAPES */
