@@ -10,18 +10,19 @@ set(CMAKE_DEBUG_POSTFIX _d)
 if(WIN32)
   set(GLFW_LIB_NAME glfw3dll)
   link_directories(${PROJECT_SOURCE_DIR}/lib/windows)
-  set(LIB_PLATFORM_DIR "${CMAKE_SOURCE_DIR}/lib/windows")
-  set(LIB_PLATFORM_SUFFIX ".dll")
+  set(LIB_PLATFORM_DIR "./lib/windows")
+  set(LIB_PLATFORM_SUFFIX "dll")
 elseif(UNIX)
   set(GLFW_LIB_NAME glfw)
   find_package(glfw3 3.3 REQUIRED)
-  set(LIB_PLATFORM_DIR "${CMAKE_SOURCE_DIR}/lib/linux")
-  set(LIB_PLATFORM_SUFFIX ".so")
+  set(LIB_PLATFORM_DIR "$./lib/linux")
+  set(LIB_PLATFORM_SUFFIX "so")
 endif()
 
 
 file(GLOB_RECURSE APP_SOURCES src/*.c)
 file(GLOB LIB_FILES "${LIB_PLATFORM_DIR}/*.${LIB_PLATFORM_SUFFIX}")
+# message("${LIB_FILES}")
 
 add_executable(main ${APP_SOURCES})
 target_include_directories(main PUBLIC
