@@ -6,6 +6,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_DEBUG_POSTFIX _d)
 
+set(MINGW_BIN_DIR "C:/Users/Raaid/Documents/Programming/tools/mingw64/bin")
 
 if(WIN32)
   set(GLFW_LIB_NAME glfw3dll)
@@ -52,6 +53,37 @@ set(USER_INCLUDES ${PROJECT_SOURCE_DIR}/include)
 
 add_subdirectory(uitest)
 
+install(TARGETS main
+        RUNTIME_DEPENDENCY_SET runtime_set
+        RUNTIME DESTINATION .
+        COMPONENT Runtime)
+
+install(
+  RUNTIME_DEPENDENCY_SET runtime_deps
+  DIRECTORIES 
+    "${MINGW_BIN_DIR}"                # MinGW DLLs (e.g., C:/mingw64/bin)
+    "${CMAKE_SOURCE_DIR}/lib/windows"  # GLFW3.dll location
+    "${CMAKE_BINARY_DIR}/uitest"   # Path to libui_test.dll
+  PRE_INCLUDE_REGEXES ".*"            # Include all dependencies
+  POST_EXCLUDE_REGEXES ".*system32/.*"  # Exclude system DLLs
+  COMPONENT Runtime
+)
+
+install(
+  FILES
+    "${MINGW_BIN_DIR}/libstdc++-6.dll"
+    "${MINGW_BIN_DIR}/libgcc_s_seh-1.dll"
+    "${MINGW_BIN_DIR}/libwinpthread-1.dll"
+    "${CMAKE_SOURCE_DIR}/lib/windows/glfw3.dll"  # GLFW3.dll
+    # "${CMAKE_BINARY_DIR}/uitest/libuitest_lib_d.dll"
+  DESTINATION bin
+  COMPONENT Runtime
+)
+
+install(
+  DIRECTORY ${CMAKE_SOURCE_DIR}/resources
+  DESTINATION .
+)
 
 target_link_libraries(main PRIVATE
     ${GLFW_LIB_NAME}

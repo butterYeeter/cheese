@@ -11,6 +11,10 @@ target_include_directories(uitest_lib PUBLIC
   ${USER_INCLUDES}
 )
 
+install(TARGETS uitest_lib
+        RUNTIME DESTINATION bin
+        COMPONENT Runtime)
+
 add_custom_command(
     TARGET uitest_lib
     POST_BUILD
