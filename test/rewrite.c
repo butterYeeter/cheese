@@ -60,18 +60,18 @@ int main() {
 
   uint32_t vertex_count = 0;
   for (uint32_t i = 0; i < mesh->index_count; i++) {
-    // float *pos = mesh->positions + mesh->indices[i].p;
-    // float *uv = mesh->positions + mesh->indices[i].p;
-    // float *norm = mesh->positions + mesh->indices[i].p;
+    float *pos = mesh->positions + mesh->indices[i].p;
+    float *uv = mesh->positions + mesh->indices[i].t;
+    float *norm = mesh->positions + mesh->indices[i].n;
 
-    // glm_vec3_copy(pos, vertex_buffer + vertex_count * sizeof(Vertex) + offsetof(Vertex, position));
-    // glm_vec2_copy(uv, vertex_buffer + vertex_count * sizeof(Vertex) + offsetof(Vertex, texcoord));
-    // glm_vec3_copy(norm, vertex_buffer + vertex_count * sizeof(Vertex) + offsetof(Vertex, normal));
+    glm_vec3_copy(pos, vertex_buffer + vertex_count * sizeof(Vertex) + offsetof(Vertex, position));
+    glm_vec2_copy(uv, vertex_buffer + vertex_count * sizeof(Vertex) + offsetof(Vertex, texcoord));
+    glm_vec3_copy(norm, vertex_buffer + i * sizeof(Vertex) + offsetof(Vertex, normal));
     // vertex_count++;
     size_t offset = vertex_count * sizeof(Vertex) + offsetof(Vertex, normal);
-    *(vertex_buffer + offset + 0) = 1.0f;
-    *(vertex_buffer + offset + 1) = 2.0f;
-    *(vertex_buffer + offset + 2) = 3.0f;
+    // *(vertex_buffer + offset + 0) = 1.0f;
+    // *(vertex_buffer + offset + 1) = 2.0f;
+    // *(vertex_buffer + offset + 2) = 3.0f;
     printf("%.2f, %.2f, %.2f\n", *(vertex_buffer + offset), *(vertex_buffer + offset + 1), *(vertex_buffer + offset + 2));
   }
 
