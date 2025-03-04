@@ -52,7 +52,9 @@ int main() {
 
   // Allocate vertex and index buffers 
   float * vertex_buffer = malloc(positions_size + texcoords_size + normals_size);
-  uint32_t * index_buffer  = malloc(mesh->position_count * sizeof(uint32_t));
+  uint32_t * index_buffer  = malloc(mesh->index_count * sizeof(uint32_t));
+  printf("Index Buffer Pointer: %p\n", mesh);
+  printf("Index Buffer Size: %lx\n", mesh->index_count * sizeof(uint32_t));
 
   // Create a map structure
   khash_t(VertexMap) *h = kh_init(VertexMap);
@@ -65,7 +67,9 @@ int main() {
 
 
   // Iterate over index array from fast_obj
-  for (uint32_t i = 0; i < 100000; i++) {
+  for (uint32_t i = 0; i < 67557; i++) {
+  	if(67557 == i) printf("Reached problem\n");
+    printf("Index Count : %u, Loop Iteration: %u\n", index_count, i);
 
     // Get vertex key
     VertexKey key = {mesh->indices[i].p, mesh->indices[i].t, mesh->indices[i].n};
