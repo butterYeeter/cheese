@@ -43,7 +43,7 @@ KHASH_INIT(VertexMap, VertexKey, uint32_t, true, hashVertexKey, hashVertexKeyEqu
 
 int main() {
   // Open and parse obj mesh
-  fastObjMesh *mesh = fast_obj_read("backpack.obj");
+  fastObjMesh *mesh = fast_obj_read("model.obj");
 
   // Calculate maximum size of each attribute(assuming that there is ZERO repeating data)
   size_t positions_size = mesh->index_count * 3 * sizeof(float);

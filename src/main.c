@@ -19,6 +19,7 @@
 #include "ebo.h"
 #include "lights.h"
 #include "ui.h"
+#include "mesh_loader.h"
 
 #include "shapes.h"
 
@@ -151,6 +152,15 @@ int main() {
   float move_speed = 10.0f;
   float fov = 45.0f;
   float mouse_sensitivity = 10.0f;
+
+  // {
+    float *vbuf;
+    uint32_t *ibuf;
+    uint32_t vcount, icount;
+    load_mesh_data(vbuf, &vcount, ibuf, &icount,
+                   "model.obj");
+    printf("Unique Vertices: %u, Number of Indices: %u", vcount, icount);
+  // }
 
   while (!glfwWindowShouldClose(win)) {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
