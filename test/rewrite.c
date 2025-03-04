@@ -122,7 +122,7 @@ int main() {
   printf("Number of indices generated: %u\n", index_count - 1);
 
   fast_obj_destroy(mesh);
-  // kh_destroy(VertexMap, h);
+  kh_destroy(VertexMap, h);
   free(vertex_buffer);
   free(index_buffer);
   return 0;
