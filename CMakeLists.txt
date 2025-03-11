@@ -88,6 +88,7 @@ install(
 target_link_libraries(main PRIVATE
     ${GLFW_LIB_NAME}
     uitest_lib
+    m
 )
 
 

@@ -2,6 +2,7 @@
 #define MESH_LOADER
 
 #include <stdint.h>
+#include <stddef.h>
 
 float *load_mesh_data(size_t *buf_size, uint32_t *vertex_count, const char * path);
 
