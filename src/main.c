@@ -37,6 +37,10 @@ int win_width = 1280, win_height = 720;
 bool use_mouse = true;
 bool firstPress = false;
 
+float move_speed = 10.0f;
+float fov = 45.0f;
+float mouse_sensitivity = 10.0f;
+
 PointLight lights[4];
 
 
@@ -79,37 +83,49 @@ int main() {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  VAO cubeVao;
-  vao_create_new(&cubeVao);
-  vao_bind(cubeVao);
-  
-  
-  VBO vbo;
-  vbo_create_new(&vbo, GL_ARRAY_BUFFER);
-  vbo_bind(vbo);
+  VAO modelVao;
+  vao_create_new(&modelVao);
+  vao_bind(modelVao);
+
+
+  size_t vtx_buf_size, idx_buf_size;
+  uint32_t vtx_count, idx_count, *idx_buf;
+  // float *vtx_buf = load_mesh_data(&vtx_buf_size, &vtx_count, "resources/backpack/backpack.obj");
+  float *vtx_buf = hashing_test(&vtx_buf_size, &vtx_count, &idx_buf, &idx_buf_size, &idx_count, "resources/backpack/backpack.obj");
+
+  VBO modelVBO;
+  vbo_create_new(&modelVBO, GL_ARRAY_BUFFER);
+  vbo_bind(modelVBO);
+  vbo_buffer_data(modelVBO, vtx_count * 8 * sizeof(float), vtx_buf, GL_STATIC_DRAW); 
   
   EBO ebo;
   ebo_create_new(&ebo, GL_ELEMENT_ARRAY_BUFFER);
   ebo_bind(ebo);
+  ebo_buffer_data(ebo, idx_buf_size, idx_buf, GL_STATIC_DRAW);
   
-  vbo_buffer_data(vbo, sizeof_cube + sizeof_cube_tex_coords + sizeof_cube_normals, NULL, GL_STATIC_DRAW);
-  vbo_buffer_subdata(0, sizeof_cube, cube);
-  vbo_buffer_subdata(sizeof_cube, sizeof_cube_tex_coords, cube_tex_coords);
-  vbo_buffer_subdata(sizeof_cube + sizeof_cube_tex_coords, sizeof_cube_normals, cube_normals);
-  vao_enable_index(cubeVao, 0);
-  vao_attrib_pointer(cubeVao, 0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
-  vao_enable_index(cubeVao, 1);
-  vao_attrib_pointer(cubeVao, 1, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), (void*)sizeof_cube);
-  vao_enable_index(cubeVao, 2);
-  vao_attrib_pointer(cubeVao, 2, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float_t), (void*)(sizeof_cube+sizeof_cube_tex_coords));
+  vao_enable_index(modelVao, 0);
+  vao_attrib_pointer(modelVao, 0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)0);
+  vao_enable_index(modelVao, 1);
+  vao_attrib_pointer(modelVao, 1, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(3*sizeof(float)));
+  vao_enable_index(modelVao, 2);
+  vao_attrib_pointer(modelVao, 2, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float_t), (void*)(5*sizeof(float)));
 
   VAO lightVao;
   vao_create_new(&lightVao);
   vao_bind(lightVao);
+
+  VBO lightVbo;
+  vbo_create_new(&lightVbo, GL_ARRAY_BUFFER);
+  vbo_bind(lightVbo);
+  vbo_buffer_data(lightVbo, sizeof_cube + sizeof_cube_tex_coords + sizeof_cube_normals, NULL, GL_STATIC_DRAW);
+  vbo_buffer_subdata(0, sizeof_cube, cube);
+  vbo_buffer_subdata(sizeof_cube, sizeof_cube_tex_coords, cube_tex_coords);
+  vbo_buffer_subdata(sizeof_cube + sizeof_cube_tex_coords, sizeof_cube_normals, cube_normals);
   vao_enable_index(lightVao, 0);
   vao_attrib_pointer(lightVao, 0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float_t), (void*)0);
-  vao_bind(lightVao);
-  
+
+
+
   init_lights(lights, 4);
   ShaderProgram program;
   shaderprogram_create(&program, "resources/shad.vert.glsl", "resources/woah.frag.glsl");
@@ -128,9 +144,6 @@ int main() {
   shaderprogram_create(&lightShader, "resources/light.vert.glsl", "resources/light.frag.glsl");
 
 
-  vec3 lightPos = {1.2f, 1.0f, 2.0f};
-  vec3 objectPos = {0.0f, -0.5f, 1.0f};
-
   Camera cam;
   camera_create(&cam, (vec3){0.0f, 0.0f, 3.0f,}, 10.0f);
   float cur_time = glfwGetTime();
@@ -143,24 +156,11 @@ int main() {
 
 
   Texture tex0, tex1, tex2;
-  texture_create(&tex0, 0, "resources/container2.png");
-  texture_create(&tex1, 1, "resources/container2_specular.png");
+  texture_create(&tex0, 0, "resources/backpack/diffuse.jpg");
+  texture_create(&tex1, 1, "resources/backpack/specular.jpg");
 
   ImGui_Init();
 
-  float rotation_speed = 1.0f;
-  float move_speed = 10.0f;
-  float fov = 45.0f;
-  float mouse_sensitivity = 10.0f;
-
-  // {
-    float *vbuf;
-    uint32_t *ibuf;
-    uint32_t vcount, icount;
-    load_mesh_data(vbuf, &vcount, ibuf, &icount,
-                   "model.obj");
-    printf("Unique Vertices: %u, Number of Indices: %u", vcount, icount);
-  // }
 
   while (!glfwWindowShouldClose(win)) {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -185,6 +185,7 @@ int main() {
 
 
     vao_bind(lightVao);
+    vbo_bind(lightVbo);
     shaderprogram_use(lightShader);
     mat4 model, view, proj;
     camera_get_matrix(cam, view);
@@ -203,32 +204,28 @@ int main() {
     vec3 viewPos, lookDir;
     camera_get_pos(cam, viewPos);
     camera_get_look_dir(cam, lookDir);
-    vao_bind(cubeVao);
+    vao_bind(modelVao);
+    vbo_bind(modelVBO);
+    ebo_bind(ebo);
     shaderprogram_use(program);
     shaderprogram_set_vec3p(program, "viewPos", viewPos);
     update_lights(program, lights, 4);
-    for (int i = 0; i < 10; i++) {
-      glm_mat4_identity(model);
-      glm_translate(model, positions[i]);
-      glm_rotate(model, glm_rad(20.0f*i), (vec3){1.0f, 0.3f, 0.5f});
-      shaderprogram_set_mat4(program, "model", model[0]);
-      shaderprogram_set_mat4(program, "view", view[0]);
-      shaderprogram_set_mat4(program, "proj", proj[0]);
-      glDrawArrays(GL_TRIANGLES, 0, 36);
-    }
+    glm_mat4_identity(model);
+    shaderprogram_set_mat4(program, "model", model[0]);
+    shaderprogram_set_mat4(program, "view", view[0]);
+    shaderprogram_set_mat4(program, "proj", proj[0]);
+    // glDrawArrays(GL_TRIANGLES, 0, vtx_count);
+    glDrawElements(GL_TRIANGLES, idx_count, GL_UNSIGNED_INT, 0);
 
     camera_set_speed(cam, move_speed);
     camera_set_mouse_sensitivity(cam, mouse_sensitivity);
     ImGui_Begin("Hello Window");
-    camera_params(&rotation_speed, &move_speed, &fov, &mouse_sensitivity);
-    // scene_params(lightColor, objectColor);
-    // material_params(&shiny, &ambient, &diffuse, &specular);
+    camera_params(&move_speed, &fov, &mouse_sensitivity);
     uint32_t n = 4;
     modify_scene_params(lights, n);
     ImGui_End();
     // demo();
     ImGui_Render();
-    // printf("%d\n",n);
 
     glfwSwapBuffers(win);
     glfwPollEvents();
