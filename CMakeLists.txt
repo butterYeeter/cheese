@@ -93,6 +93,9 @@ target_link_libraries(main PRIVATE
     zlibstatic
 )
 
+if(LINUX)
+  target_compile_options(main PRIVATE -fsanitize=address)
+endif()
 
 if(WIN32 AND CMAKE_BUILD_TYPE STREQUAL "Release")
   target_sources(main PRIVATE ${PROJECT_SOURCE_DIR}/lib/windows/glfw3.dll)
