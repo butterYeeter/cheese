@@ -170,8 +170,8 @@ int main() {
   Texture arr[] = {tex0, tex1};
   mesh_create(&m, (Vertex *)vtx_buf, vtx_count, idx_buf, idx_count, arr, 2);
   // mesh_draw(m, program);
-  Model model;
-  model_create(&model, "resources/backpack/backpack.obj");
+  Model woah;
+  model_create(&woah, "resources/backpack/backpack.obj", arr);
 
   ImGui_Init();
 
@@ -179,7 +179,7 @@ int main() {
   while (!glfwWindowShouldClose(win)) {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    ImGui_NewFrame();
+    // ImGui_NewFrame();
     
     cur_time = glfwGetTime();
     float delta_time = cur_time - last_time;
@@ -231,17 +231,18 @@ int main() {
     shaderprogram_set_float(program, "time", glfwGetTime());
     // glDrawArrays(GL_TRIANGLES, 0, vtx_count);
     // glDrawElements(GL_TRIANGLES, idx_count, GL_UNSIGNED_INT, 0);
-    mesh_draw(m, program);
+    // mesh_draw(m, program);
+    model_draw(woah, program);
 
     camera_set_speed(cam, move_speed);
     camera_set_mouse_sensitivity(cam, mouse_sensitivity);
-    ImGui_Begin("Hello Window");
-    camera_params(&move_speed, &fov, &mouse_sensitivity);
-    uint32_t n = 4;
-    modify_scene_params(lights, n);
-    ImGui_End();
+    // ImGui_Begin("Hello Window");
+    // camera_params(&move_speed, &fov, &mouse_sensitivity);
+    // uint32_t n = 4;
+    // modify_scene_params(lights, n);
+    // ImGui_End();
     // demo();
-    ImGui_Render();
+    // ImGui_Render();
 
     time += 1/120.0f;
     glfwSwapBuffers(win);
