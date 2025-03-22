@@ -26,3 +26,7 @@ void vao_attrib_pointer(VAO vao, uint32_t index, int32_t size, uint32_t type, ui
 void vao_bind(VAO vao) {
   glBindVertexArray(vao->ID);
 }
+
+void vao_unbind() {
+  glBindVertexArray(0);
+}

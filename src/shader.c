@@ -104,6 +104,11 @@ void shaderprogram_set_float(ShaderProgram program, const char * name, float val
   glUniform1f(location, value);
 }
 
+void shaderprogram_set_bool(ShaderProgram program, const char * name, bool value) {
+  uint32_t location = glGetUniformLocation(program->ID, name);
+  glUniform1i(location, value);
+}
+
 void shaderprogram_set_vec3(ShaderProgram program, const char * name, float v0, float v1, float v2) {
   uint32_t location = glGetUniformLocation(program->ID, name);
   glUniform3f(location, v0, v1, v2);

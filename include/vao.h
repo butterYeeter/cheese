@@ -17,4 +17,6 @@ void vao_attrib_pointer(VAO vao, uint32_t index, int32_t size, uint32_t type,
 
 void vao_bind(VAO vao);
 
+void vao_unbind();
+
 #endif /* VAO */

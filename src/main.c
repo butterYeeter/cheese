@@ -12,6 +12,7 @@
 
 
 #include "camera.h"
+#include "model.h"
 #include "shader.h"
 #include "texture.h"
 #include "vao.h"
@@ -19,7 +20,7 @@
 #include "ebo.h"
 #include "lights.h"
 #include "ui.h"
-#include "mesh_loader.h"
+#include "mesh.h"
 
 #include "shapes.h"
 
@@ -82,6 +83,9 @@ int main() {
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  // glEnable(GL_CULL_FACE);
+  // glCullFace(GL_BACK);
+  // glFrontFace(GL_CW);
 
   VAO modelVao;
   vao_create_new(&modelVao);
@@ -91,7 +95,7 @@ int main() {
   size_t vtx_buf_size, idx_buf_size;
   uint32_t vtx_count, idx_count, *idx_buf;
   // float *vtx_buf = load_mesh_data(&vtx_buf_size, &vtx_count, "resources/backpack/backpack.obj");
-  float *vtx_buf = hashing_test(&vtx_buf_size, &vtx_count, &idx_buf, &idx_buf_size, &idx_count, "resources/backpack/backpack.obj");
+  float *vtx_buf = load_mesh_data_indexed(&vtx_buf_size, &vtx_count, &idx_buf, &idx_buf_size, &idx_count, "resources/backpack/backpack.obj");
 
   VBO modelVBO;
   vbo_create_new(&modelVBO, GL_ARRAY_BUFFER);
@@ -131,12 +135,13 @@ int main() {
   shaderprogram_create(&program, "resources/shad.vert.glsl", "resources/woah.frag.glsl");
   shaderprogram_use(program);
   vec3 zero = {0.0f, 0.0f, 0.0f};
-  shaderprogram_set_int(program, "material.diffuse", 0);
-  shaderprogram_set_int(program, "material.specular", 1);
+  shaderprogram_set_int(program, "material.texture_diffuse1", 0);
+  shaderprogram_set_int(program, "material.texture_specular1", 1);
   shaderprogram_set_float(program, "material.shininess", 128.0f);
+  shaderprogram_set_bool(program, "one_channel_specular", true);
   shaderprogram_set_vec3(program, "dirLight.direction", 1.0f, -0.9f, -0.5f);
-  shaderprogram_set_vec3(program, "dirLight.ambient", 0.2*0.976, 0.2*0.990, 0.2*0.584);
-  shaderprogram_set_vec3(program, "dirLight.diffuse", 0.5*0.980, 0.5*0.990, 0.5*0.376);
+  shaderprogram_set_vec3(program, "dirLight.ambient", 0.1*0.976, 0.1*0.990, 0.1*0.584);
+  shaderprogram_set_vec3(program, "dirLight.diffuse", 0.2*0.980, 0.2*0.990, 0.2*0.376);
   shaderprogram_set_vec3(program, "dirLight.specular", 0.991, 1.00, 0.430);
   update_lights(program, lights, 4);
 
@@ -154,10 +159,19 @@ int main() {
   last_m_x = (float)m_x;
   last_m_y = (float)m_y;
 
+  float time = 0.0f;
+  float dt = 1/120.0f;
 
   Texture tex0, tex1, tex2;
-  texture_create(&tex0, 0, "resources/backpack/diffuse.jpg");
-  texture_create(&tex1, 1, "resources/backpack/specular.jpg");
+  texture_create(&tex0, 0, "resources/backpack/diffuse.jpg", texture_diffuse);
+  texture_create(&tex1, 1, "resources/backpack/specular.jpg", texture_specular);
+
+  Mesh m;
+  Texture arr[] = {tex0, tex1};
+  mesh_create(&m, (Vertex *)vtx_buf, vtx_count, idx_buf, idx_count, arr, 2);
+  // mesh_draw(m, program);
+  Model model;
+  model_create(&model, "resources/backpack/backpack.obj");
 
   ImGui_Init();
 
@@ -214,8 +228,10 @@ int main() {
     shaderprogram_set_mat4(program, "model", model[0]);
     shaderprogram_set_mat4(program, "view", view[0]);
     shaderprogram_set_mat4(program, "proj", proj[0]);
+    shaderprogram_set_float(program, "time", glfwGetTime());
     // glDrawArrays(GL_TRIANGLES, 0, vtx_count);
-    glDrawElements(GL_TRIANGLES, idx_count, GL_UNSIGNED_INT, 0);
+    // glDrawElements(GL_TRIANGLES, idx_count, GL_UNSIGNED_INT, 0);
+    mesh_draw(m, program);
 
     camera_set_speed(cam, move_speed);
     camera_set_mouse_sensitivity(cam, mouse_sensitivity);
@@ -227,6 +243,7 @@ int main() {
     // demo();
     ImGui_Render();
 
+    time += 1/120.0f;
     glfwSwapBuffers(win);
     glfwPollEvents();
   }

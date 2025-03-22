@@ -7,8 +7,8 @@
 void init_lights(PointLight lights[], uint32_t num_lights) {
   for (int i = 0; i < num_lights; i++) {
     glm_vec3_copy(lightPositions[i], lights[i].position);
-    glm_vec3_copy((vec3){0.2f, 0.2f, 0.2f}, lights[i].ambient);
-    glm_vec3_copy((vec3){0.5f, 0.5f, 0.5f}, lights[i].diffuse);
+    glm_vec3_copy((vec3){0.1f, 0.1f, 0.1f}, lights[i].ambient);
+    glm_vec3_copy((vec3){0.3f, 0.3f, 0.3f}, lights[i].diffuse);
     glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, lights[i].specular);
     lights[i].constant = 1.0f;
     lights[i].linear = 0.005f;

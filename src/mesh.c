@@ -1,26 +1,34 @@
-#include "mesh_loader.h"
+#include "mesh.h"
 
+#include <complex.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
 // #define FAST_OBJ_IMPLEMENTATION
+#include "ebo.h"
 #include "fast_obj.h"
 #include "khash.h"
+#include "shader.h"
+#include "texture.h"
+#include "vao.h"
+#include "vbo.h"
 #include <cglm/cglm.h>
+#include <time.h>
 
 
-typedef struct {
-  fastObjUInt p;
-  fastObjUInt t;
-  fastObjUInt n;
-} Key;
+typedef fastObjIndex Key;
 
-
-typedef struct {
-  vec3 position;
-  vec2 texcoord;
-  vec3 normal;
-} Vertex;
+struct _Mesh {
+  Vertex *vertices;
+  uint32_t num_vertices;
+  uint32_t *indices;
+  uint32_t num_indices;
+  Texture *textures;
+  uint32_t num_textures;
+  VAO vao;
+  VBO vbo;
+  EBO ebo;
+};
 
 
 khint32_t cantorHash(int32_t a, int32_t b) {
@@ -142,16 +150,86 @@ void beans(float *vertex_buffer, uint32_t * vertex_count, uint32_t *index_buffer
   kh_destroy(VertexMap, h);
 }
 
-void copy_vtx_to_buf(float *buf, fastObjMesh *mesh, const uint32_t i) {
-  fastObjIndex index = mesh->indices[i];
-  buf[i * 8 + 0] = mesh->positions[index.p * 3 + 0];
-  buf[i * 8 + 1] = mesh->positions[index.p * 3 + 1];
-  buf[i * 8 + 2] = mesh->positions[index.p * 3 + 2];
-  buf[i * 8 + 3] = mesh->texcoords[index.t * 2 + 0];
-  buf[i * 8 + 4] = mesh->texcoords[index.t * 2 + 1];
-  buf[i * 8 + 5] = mesh->normals[index.n * 3 + 0];
-  buf[i * 8 + 6] = mesh->normals[index.n * 3 + 1];
-  buf[i * 8 + 7] = mesh->normals[index.n * 3 + 2];
+static void copy_vtx_to_buf(float *buf, fastObjMesh *mesh, const uint32_t vertex, const uint32_t index) {
+  fastObjIndex i = mesh->indices[index];
+  buf[vertex * 8 + 0] = mesh->positions[i.p * 3 + 0];
+  buf[vertex * 8 + 1] = mesh->positions[i.p * 3 + 1];
+  buf[vertex * 8 + 2] = mesh->positions[i.p * 3 + 2];
+  buf[vertex * 8 + 3] = mesh->texcoords[i.t * 2 + 0];
+  buf[vertex * 8 + 4] = mesh->texcoords[i.t * 2 + 1];
+  buf[vertex * 8 + 5] = mesh->normals[i.n * 3 + 0];
+  buf[vertex * 8 + 6] = mesh->normals[i.n * 3 + 1];
+  buf[vertex * 8 + 7] = mesh->normals[i.n * 3 + 2];
+}
+
+static void mesh_setup(Mesh m) {
+  vao_create_new(&m->vao);
+  vbo_create_new(&m->vbo, GL_ARRAY_BUFFER);
+  ebo_create_new(&m->ebo, GL_ELEMENT_ARRAY_BUFFER);
+
+  vao_bind(m->vao);
+  vbo_bind(m->vbo);
+  vbo_buffer_data(m->vbo, m->num_vertices * sizeof(Vertex), m->vertices, GL_STATIC_DRAW);
+  ebo_bind(m->ebo);
+  ebo_buffer_data(m->ebo, m->num_indices * sizeof(uint32_t), m->indices, GL_STATIC_DRAW);
+
+  vao_enable_index(m->vao, 0);
+  vao_attrib_pointer(m->vao, 0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+  vao_enable_index(m->vao, 1);
+  vao_attrib_pointer(m->vao, 1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texcoord));
+  vao_enable_index(m->vao, 2);
+  vao_attrib_pointer(m->vao, 2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+
+  vao_unbind();
+}
+
+void mesh_create(Mesh *m, Vertex *vertices, size_t num_vertices, uint32_t *indices, size_t num_indices, Texture *textures, size_t num_textures) {
+  *m = malloc(sizeof(struct _Mesh));
+
+  m[0]->vertices = vertices;
+  m[0]->num_vertices = num_vertices;
+  m[0]->indices = indices;
+  m[0]->num_indices = num_indices;
+  m[0]->textures = textures;
+  m[0]->num_textures = num_textures;
+
+  mesh_setup(m[0]);
+}
+
+void mesh_draw(Mesh m, ShaderProgram sp) {
+  uint32_t diffuse_num = 1;
+  uint32_t specular_num = 1;
+
+  for (uint32_t i = 0; i < m->num_textures; i++) {
+    // glActiveTexture(GL_TEXTURE0 + i);
+
+    char name[256] = "material.";
+    // uint32_t len_name = sizeof("material.");
+    char num[16];
+    char type[32];
+
+    strncpy(type, texture_get_type(m->textures[i]), 32);
+    strncat(name, type, 256 - strlen(name));
+    // len_name += 32;
+
+    if (strncmp(type, "texture_diffuse", 32) == 0) {
+      snprintf(num, 16, "%d", diffuse_num++);
+    } else if (strncmp(type, "texture_specular", 32)) {
+      snprintf(num, 16, "%d", specular_num++);
+    }
+
+    strncat(name, num, strlen(name));
+    // printf("%s\n", name);
+
+    shaderprogram_set_int(sp, name, i);
+    texture_bind(m->textures[i], i);
+  }
+  glActiveTexture(GL_TEXTURE0);
+
+  // shaderprogram_use(sp);
+  vao_bind(m->vao);
+  vbo_bind(m->vbo);
+  glDrawElements(GL_TRIANGLES, m->num_indices, GL_UNSIGNED_INT, (void*)0);
 }
 
 float *load_mesh_data(size_t *buf_size, uint32_t *vertex_count, const char * path) {
@@ -164,7 +242,7 @@ float *load_mesh_data(size_t *buf_size, uint32_t *vertex_count, const char * pat
   float *buffer = malloc(buffer_size);
 
   for (uint32_t i = 0; i < mesh->index_count; i++) {
-    copy_vtx_to_buf(buffer, mesh, i);
+    copy_vtx_to_buf(buffer, mesh, i, i);
   }
 
   *buf_size = buffer_size;
@@ -174,7 +252,7 @@ float *load_mesh_data(size_t *buf_size, uint32_t *vertex_count, const char * pat
   return buffer;
 }
 
-float *hashing_test(size_t *vtx_buf_size, uint32_t *vtx_count, uint32_t **idx_buf, size_t *idx_buf_size, uint32_t *idx_count, const char * path) {
+float *load_mesh_data_indexed(size_t *vtx_buf_size, uint32_t *vtx_count, uint32_t **idx_buf, size_t *idx_buf_size, uint32_t *idx_count, const char * path) {
   fastObjMesh *mesh = fast_obj_read(path);
   khash_t(VertexMap) *map = kh_init(VertexMap);
 

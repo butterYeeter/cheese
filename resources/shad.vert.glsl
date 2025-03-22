@@ -11,9 +11,16 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 proj;
 
+uniform float time;
+const float pi = 3.14159265;
+
 void main() {
-  gl_Position = proj * view * model * vec4(aPos.x, aPos.y, aPos.z, 1.0);
   TexCoord = aTexCoord;
   fragPos = vec3(model * vec4(aPos, 1.));
   Normal = mat3(transpose(inverse(model))) * aNormal;
+
+
+  float len = length(aPos);
+  // vec3 pos = aPos + vec3(sin(5.00 * pi * len + time * 5) * 0.03 + 0.015);
+  gl_Position = proj * view * model * vec4(aPos, 1.);
 }

@@ -1,6 +1,7 @@
 #ifndef SHADER
 #define SHADER
 
+#include "stdbool.h"
 #include <stdint.h>
 
 
@@ -20,6 +21,8 @@ void shaderprogram_use(ShaderProgram program);
 void shaderprogram_set_int(ShaderProgram program, const char * name, int value);
 
 void shaderprogram_set_float(ShaderProgram program, const char * name, float value);
+
+void shaderprogram_set_bool(ShaderProgram program, const char * name, bool value);
 
 void shaderprogram_set_vec3(ShaderProgram program, const char * name, float v0, float v1, float v2);
 
