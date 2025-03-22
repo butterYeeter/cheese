@@ -4,6 +4,7 @@
 #include "cglm/types.h"
 #include "shader.h"
 #include "texture.h"
+#include <stddef.h>
 #include <stdint.h>
 
 typedef struct _Mesh *Mesh;

@@ -10,11 +10,13 @@ set(MINGW_BIN_DIR "C:/Users/Raaid/Documents/Programming/tools/mingw64/bin")
 
 if(WIN32)
   set(GLFW_LIB_NAME glfw3dll)
+  set(ZLIB_LIB_NAME zlibstatic)
   link_directories(${PROJECT_SOURCE_DIR}/lib/windows)
   set(LIB_PLATFORM_DIR "./lib/windows")
   set(LIB_PLATFORM_SUFFIX "dll")
 elseif(UNIX)
   set(GLFW_LIB_NAME glfw)
+  set(ZLIB_LIB_NAME)
   find_package(glfw3 3.3 REQUIRED)
   set(LIB_PLATFORM_DIR "$./lib/linux")
   set(LIB_PLATFORM_SUFFIX "so")
@@ -90,13 +92,13 @@ target_link_libraries(main PRIVATE
     uitest_lib
     assimp
     stdc++
-    zlibstatic
+    ${ZLIB_LIB_NAME}
     m
 )
 
-if(LINUX)
-  target_compile_options(main PRIVATE -fsanitize=address)
-endif()
+# if(LINUX)
+  # target_compile_options(main PRIVATE -fsanitize=address)
+# endif()
 
 if(WIN32 AND CMAKE_BUILD_TYPE STREQUAL "Release")
   target_sources(main PRIVATE ${PROJECT_SOURCE_DIR}/lib/windows/glfw3.dll)
