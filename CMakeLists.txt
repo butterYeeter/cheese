@@ -91,6 +91,7 @@ target_link_libraries(main PRIVATE
     assimp
     stdc++
     zlibstatic
+    m
 )
 
 if(LINUX)

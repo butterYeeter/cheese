@@ -85,19 +85,20 @@ int main() {
   glEnable(GL_DEPTH_TEST);
 
   fastObjMesh *m = fast_obj_read("backpack.obj");
+  printf("%p\n", m);
   printf("Number of mesh objects: %d\n", m->object_count);
   printf("Number of mesh groups: %d\n", m->group_count);
   size_t buf_size = m->index_count * 8 * sizeof(float);
   float *buf = malloc(buf_size);
-  for (int i = 0; i < m->index_count; i++) {
+  for (uint32_t i = 0; i < m->index_count; i++) {
     buf[i * 8 + 0] = m->positions[m->indices[i].p * 3 + 0];
     buf[i * 8 + 1] = m->positions[m->indices[i].p * 3 + 1];
     buf[i * 8 + 2] = m->positions[m->indices[i].p * 3 + 2];
     buf[i * 8 + 3] = m->texcoords[m->indices[i].t * 2 + 0];
     buf[i * 8 + 4] = m->texcoords[m->indices[i].t * 2 + 1];
-    buf[i * 8 + 5] = m->normals[m->indices[i].t * 3 + 0];
-    buf[i * 8 + 6] = m->normals[m->indices[i].t * 3 + 1];
-    buf[i * 8 + 7] = m->normals[m->indices[i].t * 3 + 2];
+    buf[i * 8 + 5] = m->normals[m->indices[i].n * 3 + 0];
+    buf[i * 8 + 6] = m->normals[m->indices[i].n * 3 + 1];
+    buf[i * 8 + 7] = m->normals[m->indices[i].n * 3 + 2];
   }
 
   cgltf_options opt = {0};
