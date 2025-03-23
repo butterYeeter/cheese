@@ -28,10 +28,10 @@ struct _Model {
   char directory[256];
 };
 
-void model_load(Model m, char *path);
-void model_process_node(Model m, struct aiNode *node, const struct aiScene *scene);
-Mesh model_process_mesh(Model m, struct aiMesh *mesh, const struct aiScene *scene);
-TextureVector model_load_material_textures(Model m, struct aiMaterial *mat, enum aiTextureType type);
+static void model_load(Model m, char *path);
+static void model_process_node(Model m, struct aiNode *node, const struct aiScene *scene);
+static Mesh model_process_mesh(Model m, struct aiMesh *mesh, const struct aiScene *scene);
+static TextureVector model_load_material_textures(Model m, struct aiMaterial *mat, enum aiTextureType type);
 
 void model_create(Model *m, char *path) {
   // Allocate space for a model and zero it

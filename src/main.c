@@ -85,22 +85,6 @@ int main() {
   // glFrontFace(GL_CW);
 
 
-  VAO lightVao;
-  vao_create_new(&lightVao);
-  vao_bind(lightVao);
-
-  VBO lightVbo;
-  vbo_create_new(&lightVbo, GL_ARRAY_BUFFER);
-  vbo_bind(lightVbo);
-  vbo_buffer_data(lightVbo, sizeof_cube + sizeof_cube_tex_coords + sizeof_cube_normals, NULL, GL_STATIC_DRAW);
-  vbo_buffer_subdata(0, sizeof_cube, cube);
-  vbo_buffer_subdata(sizeof_cube, sizeof_cube_tex_coords, cube_tex_coords);
-  vbo_buffer_subdata(sizeof_cube + sizeof_cube_tex_coords, sizeof_cube_normals, cube_normals);
-  vao_enable_index(lightVao, 0);
-  vao_attrib_pointer(lightVao, 0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float_t), (void*)0);
-
-
-
   init_lights(lights, 4);
   ShaderProgram program;
   shaderprogram_create(&program, "resources/shad.vert.glsl", "resources/woah.frag.glsl");
@@ -133,8 +117,9 @@ int main() {
   float time = 0.0f;
   float dt = 1/120.0f;
 
-  Model woah;
+  Model woah, cubey;
   model_create(&woah, "resources/backpack/backpack.obj");
+  model_create(&cubey, "resources/cubey.obj");
 
   ImGui_Init();
 
@@ -161,8 +146,6 @@ int main() {
       camera_process_mouse_movement(cam, xoffset, yoffset, delta_time);
 
 
-    vao_bind(lightVao);
-    vbo_bind(lightVbo);
     shaderprogram_use(lightShader);
     mat4 model, view, proj;
     camera_get_matrix(cam, view);
@@ -175,15 +158,12 @@ int main() {
       shaderprogram_set_mat4(lightShader, "view", view[0]);
       shaderprogram_set_mat4(lightShader, "proj", proj[0]);
       shaderprogram_set_vec3p(lightShader, "lightColor", lights[i].specular);
-      glDrawArrays(GL_TRIANGLES, 0, 36);
+      model_draw(cubey, lightShader);
     }
 
     vec3 viewPos, lookDir;
     camera_get_pos(cam, viewPos);
     camera_get_look_dir(cam, lookDir);
-    // vao_bind(modelVao);
-    // vbo_bind(modelVBO);
-    // ebo_bind(ebo);
     shaderprogram_use(program);
     shaderprogram_set_vec3p(program, "viewPos", viewPos);
     update_lights(program, lights, 4);
