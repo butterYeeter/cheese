@@ -11,9 +11,11 @@
 
 
 #include "camera.h"
+#include "cglm/mat4.h"
 #include "model.h"
 #include "shader.h"
 #include "lights.h"
+#include "shapes.h"
 #include "ui.h"
 
 
@@ -73,13 +75,14 @@ int main() {
     return 1;
   }
   glEnable(GL_DEPTH_TEST);
+  glEnable(GL_STENCIL_TEST);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   char shaders_dir[] = "resources/shaders/";
   char objects_dir[] = "resources/objects/";
 
-  // init_lights(lights, 4);
+  init_lights(lights, 4);
   // ShaderProgram program = shaderprogram_create(shaders_dir, "phong/vert.glsl", "phong/frag.glsl");
   // shaderprogram_use(program);
   // vec3 zero = {0.0f, 0.0f, 0.0f};
@@ -91,8 +94,8 @@ int main() {
   // shaderprogram_set_vec3(program, "dirLight.specular", 0.991, 1.00, 0.430);
   // update_lights(program, lights, 4);
 
-  ShaderProgram default_shader = shaderprogram_create(shaders_dir, "default/vert.glsl", "default/frag.glsl");
-
+  ShaderProgram default_shader = shaderprogram_create(shaders_dir, "depth_test/vert.glsl", "depth_test/frag.glsl");
+  ShaderProgram outline_shader = shaderprogram_create(shaders_dir, "outline/vert.glsl", "outline/frag.glsl");
 
   Camera cam = camera_create((vec3){0.0f, 0.0f, 3.0f,}, 10.0f);
   float cur_time = glfwGetTime();
@@ -103,9 +106,9 @@ int main() {
   last_m_x = (float)m_x;
   last_m_y = (float)m_y;
 
-  Model plane;
-
+  Model plane, cube;
   model_create(&plane, objects_dir, "plane/plane.obj");
+  model_create(&cube, objects_dir, "cubey/cubey.obj");
 
 
   ImGui_Init();
@@ -113,7 +116,7 @@ int main() {
 
   while (!glfwWindowShouldClose(win)) {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     ImGui_NewFrame();
     
     cur_time = glfwGetTime();
@@ -133,19 +136,51 @@ int main() {
       camera_process_mouse_movement(cam, xoffset, yoffset, delta_time);
 
 
-    mat4 model, view, proj;
+    mat4 view, proj;
 
-    glm_mat4_identity(model);
     camera_get_matrix(cam, view);
     glm_perspective(glm_rad(fov), (float)win_width/win_height, 0.1f, 100.0f, proj);
 
     shaderprogram_use(default_shader);
-    shaderprogram_set_mat4(default_shader, "model", model[0]);
     shaderprogram_set_mat4(default_shader, "view", view[0]);
     shaderprogram_set_mat4(default_shader, "proj", proj[0]);
+
+    glEnable(GL_DEPTH_TEST);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+    mat4 model;
+    glm_mat4_identity(model);
+    shaderprogram_set_mat4(default_shader, "model", model[0]);
+    glStencilMask(0x00);
     model_draw(plane, default_shader);
+     
+    glStencilMask(0xFF);
+    glStencilFunc(GL_ALWAYS, 1, 0xFF);
+    for (int i = 0; i < 1; i++) {
+      mat4 model;
+      glm_mat4_identity(model);
+      glm_translate(model, (vec3){0.0f, -3.5f, i * 2.0f});
+      shaderprogram_set_mat4(default_shader, "model", model[0]);
+      model_draw(cube, default_shader);
+    }
 
-
+    shaderprogram_use(outline_shader);
+    shaderprogram_set_mat4(outline_shader, "view", view[0]);
+    shaderprogram_set_mat4(outline_shader, "proj", proj[0]);
+    glStencilMask(0x00);
+    glDisable(GL_DEPTH_TEST);
+    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    for (int i = 0; i < 1; i++) {
+      mat4 model;
+      glm_mat4_identity(model);
+      glm_translate(model, (vec3){0.0f, -3.5f, i * 2.0f});
+      glm_scale_uni(model, 1.1f);
+      shaderprogram_set_mat4(outline_shader, "model", model[0]);
+      model_draw(cube, outline_shader);
+    }
+    glStencilMask(0xFF);
+    glStencilFunc(GL_ALWAYS, 1, 0xFF);
+    glEnable(GL_DEPTH_TEST);
     // mat4 model, view, proj;
     // vec3 view_pos;
 
