@@ -94,8 +94,7 @@ int main() {
   // shaderprogram_set_vec3(program, "dirLight.specular", 0.991, 1.00, 0.430);
   // update_lights(program, lights, 4);
 
-  ShaderProgram default_shader = shaderprogram_create(shaders_dir, "depth_test/vert.glsl", "depth_test/frag.glsl");
-  ShaderProgram outline_shader = shaderprogram_create(shaders_dir, "outline/vert.glsl", "outline/frag.glsl");
+  ShaderProgram depth_shader = shaderprogram_create(shaders_dir, "depth_test/vert.glsl", "depth_test/frag.glsl");
 
   Camera cam = camera_create((vec3){0.0f, 0.0f, 3.0f,}, 10.0f);
   float cur_time = glfwGetTime();
@@ -141,46 +140,23 @@ int main() {
     camera_get_matrix(cam, view);
     glm_perspective(glm_rad(fov), (float)win_width/win_height, 0.1f, 100.0f, proj);
 
-    shaderprogram_use(default_shader);
-    shaderprogram_set_mat4(default_shader, "view", view[0]);
-    shaderprogram_set_mat4(default_shader, "proj", proj[0]);
-
-    glEnable(GL_DEPTH_TEST);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    shaderprogram_use(depth_shader);
+    shaderprogram_set_mat4(depth_shader, "view", view[0]);
+    shaderprogram_set_mat4(depth_shader, "proj", proj[0]);
 
     mat4 model;
     glm_mat4_identity(model);
-    shaderprogram_set_mat4(default_shader, "model", model[0]);
-    glStencilMask(0x00);
-    model_draw(plane, default_shader);
+    shaderprogram_set_mat4(depth_shader, "model", model[0]);
+    model_draw(plane, depth_shader);
      
-    glStencilMask(0xFF);
-    glStencilFunc(GL_ALWAYS, 1, 0xFF);
     for (int i = 0; i < 1; i++) {
       mat4 model;
       glm_mat4_identity(model);
       glm_translate(model, (vec3){0.0f, -3.5f, i * 2.0f});
-      shaderprogram_set_mat4(default_shader, "model", model[0]);
-      model_draw(cube, default_shader);
+      shaderprogram_set_mat4(depth_shader, "model", model[0]);
+      model_draw(cube, depth_shader);
     }
 
-    shaderprogram_use(outline_shader);
-    shaderprogram_set_mat4(outline_shader, "view", view[0]);
-    shaderprogram_set_mat4(outline_shader, "proj", proj[0]);
-    glStencilMask(0x00);
-    glDisable(GL_DEPTH_TEST);
-    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-    for (int i = 0; i < 1; i++) {
-      mat4 model;
-      glm_mat4_identity(model);
-      glm_translate(model, (vec3){0.0f, -3.5f, i * 2.0f});
-      glm_scale_uni(model, 1.1f);
-      shaderprogram_set_mat4(outline_shader, "model", model[0]);
-      model_draw(cube, outline_shader);
-    }
-    glStencilMask(0xFF);
-    glStencilFunc(GL_ALWAYS, 1, 0xFF);
-    glEnable(GL_DEPTH_TEST);
     // mat4 model, view, proj;
     // vec3 view_pos;
 
