@@ -156,7 +156,7 @@ static void copy_vtx_to_buf(float *buf, fastObjMesh *mesh, const uint32_t vertex
   buf[vertex * 8 + 1] = mesh->positions[i.p * 3 + 1];
   buf[vertex * 8 + 2] = mesh->positions[i.p * 3 + 2];
   buf[vertex * 8 + 3] = mesh->texcoords[i.t * 2 + 0];
-  buf[vertex * 8 + 4] = mesh->texcoords[i.t * 2 + 1];
+  buf[vertex * 8 + 4] = -mesh->texcoords[i.t * 2 + 1];
   buf[vertex * 8 + 5] = mesh->normals[i.n * 3 + 0];
   buf[vertex * 8 + 6] = mesh->normals[i.n * 3 + 1];
   buf[vertex * 8 + 7] = mesh->normals[i.n * 3 + 2];

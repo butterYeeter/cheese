@@ -14,13 +14,10 @@
 #include "camera.h"
 #include "model.h"
 #include "shader.h"
-#include "texture.h"
 #include "vao.h"
 #include "vbo.h"
-#include "ebo.h"
 #include "lights.h"
 #include "ui.h"
-#include "mesh.h"
 
 #include "shapes.h"
 
@@ -87,32 +84,6 @@ int main() {
   // glCullFace(GL_BACK);
   // glFrontFace(GL_CW);
 
-  VAO modelVao;
-  vao_create_new(&modelVao);
-  vao_bind(modelVao);
-
-
-  size_t vtx_buf_size, idx_buf_size;
-  uint32_t vtx_count, idx_count, *idx_buf;
-  // float *vtx_buf = load_mesh_data(&vtx_buf_size, &vtx_count, "resources/backpack/backpack.obj");
-  float *vtx_buf = load_mesh_data_indexed(&vtx_buf_size, &vtx_count, &idx_buf, &idx_buf_size, &idx_count, "resources/backpack/backpack.obj");
-
-  VBO modelVBO;
-  vbo_create_new(&modelVBO, GL_ARRAY_BUFFER);
-  vbo_bind(modelVBO);
-  vbo_buffer_data(modelVBO, vtx_count * 8 * sizeof(float), vtx_buf, GL_STATIC_DRAW); 
-  
-  EBO ebo;
-  ebo_create_new(&ebo, GL_ELEMENT_ARRAY_BUFFER);
-  ebo_bind(ebo);
-  ebo_buffer_data(ebo, idx_buf_size, idx_buf, GL_STATIC_DRAW);
-  
-  vao_enable_index(modelVao, 0);
-  vao_attrib_pointer(modelVao, 0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)0);
-  vao_enable_index(modelVao, 1);
-  vao_attrib_pointer(modelVao, 1, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(3*sizeof(float)));
-  vao_enable_index(modelVao, 2);
-  vao_attrib_pointer(modelVao, 2, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float_t), (void*)(5*sizeof(float)));
 
   VAO lightVao;
   vao_create_new(&lightVao);
@@ -162,16 +133,8 @@ int main() {
   float time = 0.0f;
   float dt = 1/120.0f;
 
-  Texture tex0, tex1, tex2;
-  texture_create(&tex0, 0, "resources/backpack/diffuse.jpg", texture_diffuse);
-  texture_create(&tex1, 1, "resources/backpack/specular.jpg", texture_specular);
-
-  Mesh m;
-  Texture arr[] = {tex0, tex1};
-  mesh_create(&m, (Vertex *)vtx_buf, vtx_count, idx_buf, idx_count, arr, 2);
-  // mesh_draw(m, program);
   Model woah;
-  model_create(&woah, "resources/backpack/backpack.obj", arr);
+  model_create(&woah, "resources/backpack/backpack.obj");
 
   ImGui_Init();
 
@@ -179,7 +142,7 @@ int main() {
   while (!glfwWindowShouldClose(win)) {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // ImGui_NewFrame();
+    ImGui_NewFrame();
     
     cur_time = glfwGetTime();
     float delta_time = cur_time - last_time;
@@ -218,9 +181,9 @@ int main() {
     vec3 viewPos, lookDir;
     camera_get_pos(cam, viewPos);
     camera_get_look_dir(cam, lookDir);
-    vao_bind(modelVao);
-    vbo_bind(modelVBO);
-    ebo_bind(ebo);
+    // vao_bind(modelVao);
+    // vbo_bind(modelVBO);
+    // ebo_bind(ebo);
     shaderprogram_use(program);
     shaderprogram_set_vec3p(program, "viewPos", viewPos);
     update_lights(program, lights, 4);
@@ -229,20 +192,17 @@ int main() {
     shaderprogram_set_mat4(program, "view", view[0]);
     shaderprogram_set_mat4(program, "proj", proj[0]);
     shaderprogram_set_float(program, "time", glfwGetTime());
-    // glDrawArrays(GL_TRIANGLES, 0, vtx_count);
-    // glDrawElements(GL_TRIANGLES, idx_count, GL_UNSIGNED_INT, 0);
-    // mesh_draw(m, program);
     model_draw(woah, program);
 
     camera_set_speed(cam, move_speed);
     camera_set_mouse_sensitivity(cam, mouse_sensitivity);
-    // ImGui_Begin("Hello Window");
-    // camera_params(&move_speed, &fov, &mouse_sensitivity);
-    // uint32_t n = 4;
-    // modify_scene_params(lights, n);
-    // ImGui_End();
+    ImGui_Begin("Hello Window");
+    camera_params(&move_speed, &fov, &mouse_sensitivity);
+    uint32_t n = 4;
+    modify_scene_params(lights, n);
+    ImGui_End();
     // demo();
-    // ImGui_Render();
+    ImGui_Render();
 
     time += 1/120.0f;
     glfwSwapBuffers(win);
