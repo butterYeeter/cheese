@@ -174,26 +174,28 @@ static void mesh_setup(Mesh m) {
   ebo_buffer_data(m->ebo, m->num_indices * sizeof(uint32_t), m->indices, GL_STATIC_DRAW);
 
   vao_enable_index(m->vao, 0);
-  vao_attrib_pointer(m->vao, 0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+  vao_attrib_pointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
   vao_enable_index(m->vao, 1);
-  vao_attrib_pointer(m->vao, 1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texcoord));
+  vao_attrib_pointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texcoord));
   vao_enable_index(m->vao, 2);
-  vao_attrib_pointer(m->vao, 2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+  vao_attrib_pointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 
   vao_unbind();
 }
 
-void mesh_create(Mesh *m, Vertex *vertices, size_t num_vertices, uint32_t *indices, size_t num_indices, Texture *textures, size_t num_textures) {
-  *m = malloc(sizeof(struct _Mesh));
+Mesh mesh_create(Vertex *vertices, size_t num_vertices, uint32_t *indices, size_t num_indices, Texture *textures, size_t num_textures) {
+  Mesh m = malloc(sizeof(struct _Mesh));
 
-  m[0]->vertices = vertices;
-  m[0]->num_vertices = num_vertices;
-  m[0]->indices = indices;
-  m[0]->num_indices = num_indices;
-  m[0]->textures = textures;
-  m[0]->num_textures = num_textures;
+  m->vertices = vertices;
+  m->num_vertices = num_vertices;
+  m->indices = indices;
+  m->num_indices = num_indices;
+  m->textures = textures;
+  m->num_textures = num_textures;
 
-  mesh_setup(m[0]);
+  mesh_setup(m);
+
+  return m;
 }
 
 void mesh_draw(Mesh m, ShaderProgram sp) {
@@ -201,7 +203,7 @@ void mesh_draw(Mesh m, ShaderProgram sp) {
   uint32_t specular_num = 1;
 
   for (uint32_t i = 0; i < m->num_textures; i++) {
-    // glActiveTexture(GL_TEXTURE0 + i);
+    glActiveTexture(GL_TEXTURE0 + i);
 
     char name[256] = "material.";
     // uint32_t len_name = sizeof("material.");

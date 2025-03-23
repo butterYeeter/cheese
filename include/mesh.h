@@ -15,7 +15,7 @@ typedef struct _Vertex {
   vec3 normal;
 } Vertex;
 
-void mesh_create(Mesh *m, Vertex *vertices, size_t num_vertices, uint32_t *indices, size_t num_indices, Texture *textures, size_t num_textures);
+Mesh mesh_create(Vertex *vertices, size_t num_vertices, uint32_t *indices, size_t num_indices, Texture *textures, size_t num_textures);
 
 void mesh_draw(Mesh m, ShaderProgram sp);
 

@@ -7,77 +7,66 @@
 #include <stb_image.h>
 #include <string.h>
 
-// typedef enum _TextureFormat {
-//   RGB = 3,
-//   RGBA = 4
-// } TextureFormat;
 
 struct _Texture {
   uint32_t ID;
   char type[32];
   char path[256];
-  // TextureFormat format;
 };
 
-GLint get_texture_format(int num_channels) {
-  if (num_channels >= 1 && num_channels <= 4) {
-    switch (num_channels) {
-    case 1:
-      return GL_RED;
-    case 2:
-      return GL_RG;
-    case 3:
-      return GL_RGB;
-    case 4:
-      return GL_RGBA;
-    }
-  }
+static GLint formats[] = {GL_RED, GL_RG, GL_RGB, GL_RGBA};
+static char* tex_types[] = {"texture_diffuse", "texture_specular", "texture_none"};
 
+static GLint get_texture_format(int num_channels) {
+  if (1 <= num_channels && num_channels <= 4) return formats[num_channels - 1];
   return 0;
 }
 
+static char *textype_to_string(TextureType type) {
+  if (0 <= type && type <= 2)
+    return tex_types[type];
+  return "texture_error";
+}
 
-void _texture_create(Texture tex, uint8_t binding_slot, const char *path, TextureType type) {
+
+Texture texture_create_from_mem(TextureType type, bool gen_mipmaps, int32_t width, int32_t height, int32_t num_channels, void *data) {
+  Texture tex = malloc(sizeof(struct _Texture));
+  memset(tex, 0, sizeof(struct _Texture));
+
   glGenTextures(1, &tex->ID);
-  glActiveTexture(GL_TEXTURE0 + binding_slot);
+  glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, tex->ID);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (gen_mipmaps) ? GL_NEAREST_MIPMAP_LINEAR : GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
+  glTexImage2D(GL_TEXTURE_2D, 0, get_texture_format(num_channels), width, height, 0, get_texture_format(num_channels), GL_UNSIGNED_BYTE, data);
+
+  if (gen_mipmaps)
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+  strncpy(tex->type, textype_to_string(type), 32);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+  return tex;
+}
+
+Texture texture_create_from_file(TextureType type, bool gen_mipmaps, const char *path) {
   int32_t width, height, num_channels;
   stbi_set_flip_vertically_on_load(true);
   unsigned char *data = stbi_load(path, &width, &height, &num_channels, 0);
-  printf("%d %d\n", num_channels, (num_channels+0x1904)-GL_RGBA);
-  // if ((n | 0x1904) == GL_RGBA)
-    // printf("Test\n");
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, get_texture_format(num_channels), GL_UNSIGNED_BYTE, data);
-  glGenerateMipmap(GL_TEXTURE_2D);
+
+  Texture tex = texture_create_from_mem(type, gen_mipmaps, width, height, num_channels, data);
   stbi_image_free(data);
 
-  switch (type) {
-    case texture_diffuse:
-      // tex->type = "texture_diffuse";
-      strncpy(tex->type, "texture_diffuse", sizeof(tex->type));
-      break;
-    case texture_specular:
-      // tex->type = "texture_specular";
-      strncpy(tex->type, "texture_specular", sizeof(tex->type));
-      break;
-    default:
-      // tex->type = "texture_error";
-      strncpy(tex->type, "texture_error", sizeof(tex->type));
-  }
-
   strncpy(tex->path, path, 256);
+
+  return tex;
 }
 
-void texture_create(Texture *tex, uint8_t binding_slot, const char *path, TextureType type) {
-  *tex = malloc(sizeof(struct _Texture));
-  memset(*tex, 0, sizeof(struct _Texture));
-
-  _texture_create(*tex, binding_slot, path, type);
+uint32_t texture_get_id(Texture tex) {
+  return tex->ID;
 }
 
 char *texture_get_type(Texture tex) {

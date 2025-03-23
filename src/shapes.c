@@ -31,10 +31,31 @@ float triangle[] = {
 
 size_t sizeof_triangle = sizeof(triangle);
 
-float square[] = {-0.5f, -0.5f, 0.5f, -0.5f, 0.5f,  0.5f,
-                  -0.5f, -0.5f, 0.5f, 0.5f,  -0.5f, 0.5f};
+float square[] = {-1.0f, -1.0f,     0.0f, 0.0f,
+                  1.0f, -1.0f,      1.0f, 0.0f,
+                  1.0f,  1.0f,      1.0f, 1.0f,
+                  -1.0f, -1.0f,     0.0f, 0.0f,
+                  1.0f, 1.0f,       1.0f, 1.0f,
+                  -1.0f, 1.0f,      0.0f, 1.0f};
 
 size_t sizeof_square = sizeof(square);
+
+uint32_t square_indices[] = {0, 1, 2, 0, 4, 5};
+
+size_t sizeof_square_indices = sizeof(square_indices);
+
+float plane[] = {-1.0f, 0.0f, -1.0f,        0.0f, 0.0f,
+                  1.0f, 0.0f, -1.0f,        1.0f, 0.0f,
+                  1.0f,  0.0f, 1.0f,        1.0f, 1.0f,
+                  -1.0f, 0.0f, -1.0f,       0.0f, 0.0f,
+                  1.0f, 0.0f, 1.0f,         1.0f, 1.0f,
+                  -1.0f, 0.0f, 1.0f,        0.0f, 1.0f};
+
+size_t sizeof_plane = sizeof(plane);
+
+uint32_t plane_indices[] = {0, 1, 2, 0, 4, 5};
+
+size_t sizeof_plane_indices = sizeof(plane_indices);
 
 float tri_base_pyramid[] = {-0.5f, -0.5f, 0.5f,  0.5f,  -0.5f,
                             0.5f,  0.5f,  -0.5f, -0.5f, -0.5f,

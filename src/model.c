@@ -141,8 +141,7 @@ Mesh model_process_mesh(Model m, struct aiMesh *mesh, const struct aiScene *scen
       kv_push(Texture, textures, kv_A(specular_maps, i));
   }
 
-  Mesh _mesh;
-  mesh_create(&_mesh, vertices, num_vertices, indices, num_indices, textures.a, kv_size(textures));
+  Mesh _mesh = mesh_create(vertices, num_vertices, indices, num_indices, textures.a, kv_size(textures));
   return _mesh;
 }
 
@@ -182,8 +181,7 @@ TextureVector model_load_material_textures(Model m, struct aiMaterial *mat, enum
     }
     
     if (!skip) {
-      Texture tex;
-      texture_create(&tex, 0, path, tex_type);
+      Texture tex = texture_create_from_file(tex_type, true, path);
       kv_push(Texture, vector, tex);
       kh_value(m->textures_loaded, k) = tex;
       printf("Texture cache count %d\n", kh_size(m->textures_loaded));

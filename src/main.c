@@ -12,11 +12,17 @@
 
 #include "camera.h"
 #include "cglm/mat4.h"
+#include "ebo.h"
+#include "kvec.h"
+#include "mesh.h"
 #include "model.h"
 #include "shader.h"
 #include "lights.h"
 #include "shapes.h"
+#include "texture.h"
 #include "ui.h"
+#include "vao.h"
+#include "vbo.h"
 
 
 typedef struct Material {
@@ -75,7 +81,6 @@ int main() {
     return 1;
   }
   glEnable(GL_DEPTH_TEST);
-  glEnable(GL_STENCIL_TEST);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -94,7 +99,8 @@ int main() {
   // shaderprogram_set_vec3(program, "dirLight.specular", 0.991, 1.00, 0.430);
   // update_lights(program, lights, 4);
 
-  ShaderProgram depth_shader = shaderprogram_create(shaders_dir, "depth_test/vert.glsl", "depth_test/frag.glsl");
+  ShaderProgram default_shader = shaderprogram_create(shaders_dir, "default/vert.glsl", "default/frag.glsl");
+  ShaderProgram fbshader = shaderprogram_create(shaders_dir, "framebuffer/vert.glsl", "framebuffer/base.frag.glsl");
 
   Camera cam = camera_create((vec3){0.0f, 0.0f, 3.0f,}, 10.0f);
   float cur_time = glfwGetTime();
@@ -105,17 +111,47 @@ int main() {
   last_m_x = (float)m_x;
   last_m_y = (float)m_y;
 
-  Model plane, cube;
-  model_create(&plane, objects_dir, "plane/plane.obj");
-  model_create(&cube, objects_dir, "cubey/cubey.obj");
+  VAO screenvao = vao_create_new();
+  VBO screenvbo = vbo_create_new(GL_ARRAY_BUFFER);
 
+  vao_bind(screenvao);
+  vbo_bind(screenvbo);
+  vbo_buffer_data(screenvbo, sizeof_square, square, GL_STATIC_DRAW);
+
+  vao_enable_index(screenvao, 0);
+  vao_attrib_pointer(0, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)0);
+  vao_enable_index(screenvao, 1);
+  vao_attrib_pointer(1, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
+
+  Model plane, container;
+  model_create(&plane, objects_dir, "plane/plane.obj");
+  model_create(&container, objects_dir, "container/container.obj");
 
   ImGui_Init();
 
+  Texture color = texture_create_from_mem(texture_none, false, win_width, win_height, 3, NULL);
+
+  GLuint rbo;
+  glGenRenderbuffers(1, &rbo);
+  glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, win_width,
+                        win_height);
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    
+  GLuint fbo;
+  glGenFramebuffers(1, &fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                         texture_get_id(color), 0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                            GL_RENDERBUFFER, rbo);
+
+  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    printf("ERROR::Framebuffer:: Framebuffer is not complete!\n");
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 
   while (!glfwWindowShouldClose(win)) {
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     ImGui_NewFrame();
     
     cur_time = glfwGetTime();
@@ -134,28 +170,41 @@ int main() {
     if (use_mouse)
       camera_process_mouse_movement(cam, xoffset, yoffset, delta_time);
 
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
 
     mat4 view, proj;
-
     camera_get_matrix(cam, view);
     glm_perspective(glm_rad(fov), (float)win_width/win_height, 0.1f, 100.0f, proj);
 
-    shaderprogram_use(depth_shader);
-    shaderprogram_set_mat4(depth_shader, "view", view[0]);
-    shaderprogram_set_mat4(depth_shader, "proj", proj[0]);
+    shaderprogram_use(default_shader);
+    shaderprogram_set_mat4(default_shader, "view", view[0]);
+    shaderprogram_set_mat4(default_shader, "proj", proj[0]);
 
     mat4 model;
     glm_mat4_identity(model);
-    shaderprogram_set_mat4(depth_shader, "model", model[0]);
-    model_draw(plane, depth_shader);
+    glm_translate_y(model, -5.0f);
+    glm_scale_uni(model, 5.0f);
+    shaderprogram_set_mat4(default_shader, "model", model[0]);
+    model_draw(plane, default_shader);
      
     for (int i = 0; i < 1; i++) {
       mat4 model;
       glm_mat4_identity(model);
       glm_translate(model, (vec3){0.0f, -3.5f, i * 2.0f});
-      shaderprogram_set_mat4(depth_shader, "model", model[0]);
-      model_draw(cube, depth_shader);
+      shaderprogram_set_mat4(default_shader, "model", model[0]);
+      model_draw(container, default_shader);
     }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDisable(GL_DEPTH_TEST);
+    texture_bind(color, 0);
+    shaderprogram_use(fbshader);
+    vao_bind(screenvao);
+    vbo_bind(screenvbo);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 
     // mat4 model, view, proj;
     // vec3 view_pos;

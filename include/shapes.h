@@ -17,6 +17,15 @@ extern size_t sizeof_triangle;
 extern float square[];
 extern size_t sizeof_square;
 
+extern uint32_t square_indices[];
+extern size_t sizeof_square_indices;
+
+extern float plane[];
+extern size_t sizeof_plane;
+
+extern uint32_t plane_indices[];
+extern size_t sizeof_plane_indices;
+
 extern float tri_base_pyramid[];
 extern size_t sizeof_tri_base_pyramid;
 

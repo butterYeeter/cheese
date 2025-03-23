@@ -15,7 +15,7 @@ void vao_enable_index(VAO vao, uint32_t index) {
   glEnableVertexAttribArray(index);
 }
 
-void vao_attrib_pointer(VAO vao, uint32_t index, int32_t size, uint32_t type, uint32_t normalized, size_t stride, void * offset) {
+void vao_attrib_pointer(uint32_t index, int32_t size, uint32_t type, uint32_t normalized, size_t stride, void * offset) {
   glVertexAttribPointer(index, size, type, normalized, stride, offset);
 }
 
