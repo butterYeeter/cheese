@@ -163,9 +163,9 @@ static void copy_vtx_to_buf(float *buf, fastObjMesh *mesh, const uint32_t vertex
 }
 
 static void mesh_setup(Mesh m) {
-  vao_create_new(&m->vao);
-  vbo_create_new(&m->vbo, GL_ARRAY_BUFFER);
-  ebo_create_new(&m->ebo, GL_ELEMENT_ARRAY_BUFFER);
+  m->vao = vao_create_new();
+  m->vbo = vbo_create_new(GL_ARRAY_BUFFER);
+  m->ebo = ebo_create_new(GL_ELEMENT_ARRAY_BUFFER);
 
   vao_bind(m->vao);
   vbo_bind(m->vbo);

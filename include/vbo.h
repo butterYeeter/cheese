@@ -7,7 +7,7 @@
 typedef struct _VBO *VBO;
 
 
-void vbo_create_new(VBO *vbo, uint32_t buffer_type);
+VBO vbo_create_new(uint32_t buffer_type);
 
 void vbo_buffer_data(VBO vbo, size_t size, void *data, uint32_t usage);
 

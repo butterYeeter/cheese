@@ -1,0 +1,4 @@
+newmtl container
+
+map_Kd diffuse.png
+map_Ks specular.png

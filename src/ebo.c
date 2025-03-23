@@ -12,13 +12,14 @@ struct _EBO {
 };
 
 
-void ebo_create_new(EBO *ebo, uint32_t buffer_type) {
-  *ebo = malloc(sizeof(struct _EBO));
-  memset(*ebo, 0, sizeof(struct _EBO));
-  (*ebo)->type = buffer_type;
-  glGenBuffers(1, &(*ebo)->ID);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (*ebo)->ID);
+EBO ebo_create_new(uint32_t buffer_type) {
+  EBO ebo = malloc(sizeof(struct _EBO));
+  memset(ebo, 0, sizeof(struct _EBO));
+  ebo->type = buffer_type;
+  glGenBuffers(1, &ebo->ID);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo->ID);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+  return ebo;
 }
 
 void ebo_buffer_data(EBO ebo, size_t size, void *data, uint32_t usage) {

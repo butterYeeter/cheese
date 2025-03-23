@@ -27,17 +27,17 @@ void movement(Camera cam, vec3 dir, bool negate, float delta_time, float speed);
 
 void update_camera_vectors(Camera cam);
 
-void camera_create(Camera *cam, vec3 pos, float speed) {
-  *cam = malloc(sizeof(struct _Camera));
-  glm_vec3_dup(frontDefault, (*cam)->front);
-  glm_vec3_dup(worldUp, (*cam)->up);
-  glm_vec3_dup(pos, (*cam)->pos);
-  glm_vec3_dup(defaultRight, (*cam)->right);
-  (*cam)->pitch = 0.0f;
-  (*cam)->yaw = -90.0f;
-  (*cam)->speed = speed;
-  (*cam)->old_speed = (*cam)->speed;
-  (*cam)->mouse_sensitivity = 10.0f;
+Camera camera_create(vec3 pos, float speed) {
+  Camera cam = malloc(sizeof(struct _Camera));
+  glm_vec3_dup(frontDefault, cam->front);
+  glm_vec3_dup(worldUp, cam->up);
+  glm_vec3_dup(pos, cam->pos);
+  glm_vec3_dup(defaultRight, cam->right);
+  cam->pitch = 0.0f;
+  cam->yaw = -90.0f;
+  cam->speed = speed;
+  cam->old_speed = cam->speed;
+  cam->mouse_sensitivity = 10.0f;
 }
 
 

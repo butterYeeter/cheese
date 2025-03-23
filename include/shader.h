@@ -10,11 +10,9 @@ typedef struct _ShaderProgram *ShaderProgram;
 typedef struct _Shader *Shader;
 
 
-void shader_create(Shader *shader, uint32_t type, const char * const source);
+Shader shader_create(uint32_t type, const char * const source);
 
-void shaderprogram_create(ShaderProgram *program,
-                          const char *const vert_shad_pth,
-                          const char *const frag_shad_pth);
+ShaderProgram shaderprogram_create(const char *directory, const char *const vert_shad_pth, const char *const frag_shad_pth);
 
 void shaderprogram_use(ShaderProgram program);
 

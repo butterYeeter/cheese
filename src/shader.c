@@ -45,51 +45,57 @@ void compileErrors(unsigned int shader, const char* type)
 	}
 }
 
-void shader_create(Shader *shader, uint32_t type, const char * const source) {
-  *shader = malloc(sizeof(struct _Shader));
-  (*shader)->ID = glCreateShader(type);
-  (*shader)->type = type;
+Shader shader_create(uint32_t type, const char * const source) {
+  Shader shader = malloc(sizeof(struct _Shader));
+  shader->ID = glCreateShader(type);
+  shader->type = type;
   // printf("%s\n", source);
-  glShaderSource((*shader)->ID, 1, &source, NULL);
-  glCompileShader((*shader)->ID);
+  glShaderSource(shader->ID, 1, &source, NULL);
+  glCompileShader(shader->ID);
+  return shader;
 }
 
-void shaderprogram_create(ShaderProgram *program, const char *const vert_shad_pth,
-                       const char *const frag_shad_pth) {
-
+ShaderProgram shaderprogram_create(const char *directory, const char *const vert_shader_path, const char *const frag_shader_path) {
+  ShaderProgram program;
   Shader vertex, fragment;
   char *vertex_source, *fragment_source;
+  char _vert_shader_path[256], _frag_shader_path[256];
+  snprintf(_vert_shader_path, 256, "%s/%s", directory, vert_shader_path);
+  snprintf(_frag_shader_path, 256, "%s/%s", directory, frag_shader_path);
 
   // Read shader sources using given paths
-  if (ReadFile(vert_shad_pth, &vertex_source))
-    return;
+  if (ReadFile(_vert_shader_path, &vertex_source))
+    return NULL;
 
-  if (ReadFile(frag_shad_pth, &fragment_source))
-    return;
+  if (ReadFile(_frag_shader_path, &fragment_source))
+    return NULL;
 
   // Create vertex and fragment shaders
-  shader_create(&vertex, GL_VERTEX_SHADER, vertex_source);
+  vertex = shader_create(GL_VERTEX_SHADER, vertex_source);
   compileErrors(vertex->ID, "SVert");
-  shader_create(&fragment, GL_FRAGMENT_SHADER, fragment_source);
+  fragment = shader_create(GL_FRAGMENT_SHADER, fragment_source);
   compileErrors(fragment->ID, "SFrag");
 
   // Allocate memory for ShaderProgram
-  *program = malloc(sizeof(struct _ShaderProgram));
+  program = malloc(sizeof(struct _ShaderProgram));
 
   if (NULL == program)
-    return;
+    return NULL;
 
 
   // Create shader program and link with shaders
-  (*program)->ID = glCreateProgram();
-  glAttachShader((*program)->ID, vertex->ID);
-  glAttachShader((*program)->ID, fragment->ID);
-  glLinkProgram((*program)->ID);
+  program->ID = glCreateProgram();
+  glAttachShader(program->ID, vertex->ID);
+  glAttachShader(program->ID, fragment->ID);
+  glLinkProgram(program->ID);
 
-  compileErrors((*program)->ID, "P");
+  compileErrors(program->ID, "P");
+
   // Clean up
   free(vertex_source);
   free(fragment_source);
+
+  return program;
 }
 
 void shaderprogram_use(ShaderProgram program) { glUseProgram(program->ID); }

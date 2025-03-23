@@ -33,7 +33,7 @@ static void model_process_node(Model m, struct aiNode *node, const struct aiScen
 static Mesh model_process_mesh(Model m, struct aiMesh *mesh, const struct aiScene *scene);
 static TextureVector model_load_material_textures(Model m, struct aiMaterial *mat, enum aiTextureType type);
 
-void model_create(Model *m, char *path) {
+void model_create(Model *m, const char *directory, const char *path) {
   // Allocate space for a model and zero it
   *m = malloc(sizeof(struct _Model));
   memset(*m, 0, sizeof(struct _Model));
@@ -45,7 +45,9 @@ void model_create(Model *m, char *path) {
   (*m)->textures_loaded = kh_init(TextureMap);
 
   // Call model load function to load mesh data
-  model_load(*m, path);
+  char fullpath[256];
+  snprintf(fullpath, 256, "%s/%s", directory, path);
+  model_load(*m, fullpath);
 }
 
 void model_load(Model m, char *path) {

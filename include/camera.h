@@ -7,7 +7,7 @@
 
 typedef struct _Camera *Camera;
 
-void camera_create(Camera *cam, vec3 pos, float speed);
+Camera camera_create(vec3 pos, float speed);
 
 void camera_matrix(Camera cam, float FOVdeg, float near_plane, float far_plane);
 

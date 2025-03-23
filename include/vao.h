@@ -8,7 +8,7 @@
 typedef union _VAO *VAO;
 
 
-void vao_create_new(VAO *vao);
+VAO vao_create_new();
 
 void vao_enable_index(VAO vao, uint32_t index);
 
