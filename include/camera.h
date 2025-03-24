@@ -15,7 +15,11 @@ void camera_get_matrix(Camera cam, mat4 matrix);
 
 void camera_get_pos(Camera cam, vec3 pos);
 
-void camera_get_look_dir(Camera cam, vec3 lookDir);
+void camera_set_pos(Camera cam, vec3 pos);
+
+void camera_get_look_dir(Camera cam, vec3 look_dir);
+
+void camera_set_look_dir(Camera cam, vec3 look_dir);
 
 void camera_set_speed(Camera cam, float speed);
 

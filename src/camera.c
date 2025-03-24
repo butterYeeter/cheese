@@ -52,8 +52,16 @@ void camera_get_pos(Camera cam, vec3 pos) {
   glm_vec3_dup(cam->pos, pos);
 }
 
-void camera_get_look_dir(Camera cam, vec3 lookDir) {
-  glm_vec3_dup(cam->front, lookDir);
+void camera_set_pos(Camera cam, vec3 pos) {
+  glm_vec3_dup(pos, cam->pos);
+}
+
+void camera_get_look_dir(Camera cam, vec3 look_dir) {
+  glm_vec3_dup(cam->front, look_dir);
+}
+
+void camera_set_look_dir(Camera cam, vec3 look_dir) {
+  glm_vec3_dup(look_dir, cam->front);
 }
 
 void camera_set_speed(Camera cam, float speed) {

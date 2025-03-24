@@ -102,7 +102,20 @@ int main() {
   ShaderProgram default_shader = shaderprogram_create(shaders_dir, "default/vert.glsl", "default/frag.glsl");
   ShaderProgram fbshader = shaderprogram_create(shaders_dir, "framebuffer/vert.glsl", "framebuffer/base.frag.glsl");
 
-  Camera cam = camera_create((vec3){0.0f, 0.0f, 3.0f,}, 10.0f);
+  vec3 cam_pos = {0.0f, 0.0f, 3.0f};
+  vec3 look_dir;
+  Camera cam = camera_create(cam_pos, 10.0f);
+  camera_get_look_dir(cam, look_dir);
+  glm_vec3_negate(look_dir);
+  Camera rear_mirror = camera_create(cam_pos, 10.0f);
+  camera_set_look_dir(rear_mirror, look_dir);
+
+  int mirror_width = 600;
+  int mirror_height = 200;
+
+  mat4 projmirror;
+  glm_perspective(glm_rad(45.0f), (float)mirror_width/mirror_height, 0.1f, 100.0f, projmirror);
+
   float cur_time = glfwGetTime();
   float last_time = cur_time;
   double m_x, m_y;
@@ -129,13 +142,12 @@ int main() {
 
   ImGui_Init();
 
-  Texture color = texture_create_from_mem(texture_none, false, win_width, win_height, 3, NULL);
+  Texture color = texture_create_from_mem(texture_none, false, mirror_width, mirror_height, 3, NULL);
 
   GLuint rbo;
   glGenRenderbuffers(1, &rbo);
   glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, win_width,
-                        win_height);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, mirror_width, mirror_height);
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
     
   GLuint fbo;
@@ -174,8 +186,41 @@ int main() {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
+    glViewport(0, 0, mirror_width, mirror_height);
 
-    mat4 view, proj;
+    vec3 u = {0.0f, 1.0f, 0.0f};
+    vec3 r, f, p;
+    camera_get_pos(cam, p);
+    camera_get_look_dir(cam, look_dir);
+    glm_vec3_inv_to(look_dir, f);
+    camera_set_pos(rear_mirror, p);
+    camera_set_look_dir(rear_mirror, f);
+
+    mat4 model, view, proj;
+    camera_get_matrix(rear_mirror, view);
+    glm_perspective(glm_rad(fov), (float)win_width/win_height, 0.1f, 100.0f, proj);
+
+    shaderprogram_use(default_shader);
+    shaderprogram_set_mat4(default_shader, "view", view[0]);
+    shaderprogram_set_mat4(default_shader, "proj", projmirror[0]);
+
+    glm_mat4_identity(model);
+    glm_translate_y(model, -5.0f);
+    glm_scale_uni(model, 5.0f);
+    shaderprogram_set_mat4(default_shader, "model", model[0]);
+    model_draw(plane, default_shader);
+     
+    glm_mat4_identity(model);
+    glm_translate(model, (vec3){0.0f, -3.5f, 2.0f});
+    shaderprogram_set_mat4(default_shader, "model", model[0]);
+    model_draw(container, default_shader);
+
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, win_width, win_height);
+
     camera_get_matrix(cam, view);
     glm_perspective(glm_rad(fov), (float)win_width/win_height, 0.1f, 100.0f, proj);
 
@@ -183,27 +228,26 @@ int main() {
     shaderprogram_set_mat4(default_shader, "view", view[0]);
     shaderprogram_set_mat4(default_shader, "proj", proj[0]);
 
-    mat4 model;
     glm_mat4_identity(model);
     glm_translate_y(model, -5.0f);
     glm_scale_uni(model, 5.0f);
     shaderprogram_set_mat4(default_shader, "model", model[0]);
     model_draw(plane, default_shader);
      
-    for (int i = 0; i < 1; i++) {
-      mat4 model;
-      glm_mat4_identity(model);
-      glm_translate(model, (vec3){0.0f, -3.5f, i * 2.0f});
-      shaderprogram_set_mat4(default_shader, "model", model[0]);
-      model_draw(container, default_shader);
-    }
+    glm_mat4_identity(model);
+    glm_translate(model, (vec3){0.0f, -3.5f, 2.0f});
+    shaderprogram_set_mat4(default_shader, "model", model[0]);
+    model_draw(container, default_shader);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDisable(GL_DEPTH_TEST);
     texture_bind(color, 0);
     shaderprogram_use(fbshader);
     vao_bind(screenvao);
     vbo_bind(screenvbo);
+    glm_mat4_identity(model);
+    glm_translate_y(model, 0.86f);
+    glm_scale(model, (vec3){0.47f, 0.28f, 1.0f});
+    shaderprogram_set_mat4(fbshader, "model", model[0]);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     // mat4 model, view, proj;
